@@ -1,6 +1,6 @@
 
 public class SlangWord {
-	
+
 	private String slang;
 	private String definition;
 	
@@ -17,4 +17,15 @@ public class SlangWord {
 		this.definition = definition;
 	}
 
+	public SlangWord() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	
+	public SlangWord(String slang, String definition) {
+		super();
+		this.slang = slang;
+		this.definition = definition;
+	}
+	
 }

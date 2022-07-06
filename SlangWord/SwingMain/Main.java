@@ -37,6 +37,12 @@ public class Main extends JPanel implements ActionListener {
 		super(new BorderLayout());
 
 		lstSlangWord = new ArrayList<SlangWord>();
+		try {
+			importDataFromFile(lstSlangWord);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 
 		GridLayout panelGridLayout = new GridLayout(1, 3);
 		panelGridBagLayout = new JPanel();
@@ -64,7 +70,7 @@ public class Main extends JPanel implements ActionListener {
 		gridBagConstraints.gridwidth = 1;
 
 		// Panel Slang text field
-		lb2 = new JLabel("Mã học sinh:");
+		lb2 = new JLabel("Slang word:");
 		lb2.setFont(new Font("Arial", Font.PLAIN, 16));
 		tfSlang = new JFormattedTextField(new DecimalFormat("#"));
 		tfSlang.setPreferredSize(new Dimension(180, 24));
@@ -81,7 +87,7 @@ public class Main extends JPanel implements ActionListener {
 		panelGridBagLayout.add(pn1, gridBagConstraints);
 
 		// Panel Definition text field
-		lb3 = new JLabel("Tên học sinh: ");
+		lb3 = new JLabel("Definition: ");
 		lb3.setFont(new Font("Arial", Font.PLAIN, 16));
 		tfDefinition = new JTextField();
 		tfDefinition.setPreferredSize(new Dimension(180, 24));
@@ -109,6 +115,7 @@ public class Main extends JPanel implements ActionListener {
 			}
 		});
 		jtbSlangwords.setDefaultEditor(Object.class, null);
+		fillTable();
 
 		// Box
 		JPanel pn7 = new JPanel();
@@ -125,9 +132,57 @@ public class Main extends JPanel implements ActionListener {
 
 	}
 
+	private void importDataFromFile(ArrayList<SlangWord> lstSlangWord) throws FileNotFoundException, IOException {
+		try (BufferedReader br = new BufferedReader(new FileReader("slang.txt"))) {
+			String row;
+
+			// read header.
+			row = br.readLine();
+
+			// read content file.
+			while (true) {
+				row = br.readLine();
+
+				if (row == null)
+					break;
+
+				String[] data = row.split("`");
+
+				SlangWord slangWord = new SlangWord();
+
+				slangWord.setSlang(data[0]);
+				slangWord.setDefinition(data[1]);
+
+				lstSlangWord.add(slangWord);
+
+			}
+			br.close();
+
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void resetForm() {
+		tfSlang.setText("");
+		tfDefinition.setText("");
+	}
+
 	private void setForm(SlangWord slangWord) {
 		tfSlang.setText(String.valueOf(slangWord.getSlang()));
 		tfDefinition.setText(String.valueOf(slangWord.getDefinition()));
+	}
+
+	private void fillTable() {
+		DefaultTableModel model = (DefaultTableModel) jtbSlangwords.getModel();
+		model.setRowCount(0);
+		for (SlangWord slangWord : lstSlangWord) {
+			Object[] rowdata = new Object[6];
+			rowdata[0] = slangWord.getSlang();
+			rowdata[1] = slangWord.getDefinition();
+
+			model.addRow(rowdata);
+		}
 	}
 
 	public static void main(String args[]) {
