@@ -27,7 +27,7 @@ public class Main extends JPanel implements ActionListener {
 	JPanel panelGridBagLayout, pn1, pn2, pn3, pn4, pn5;
 	JLabel lb1, lb2, lb3, lb4, lb5, lb6;
 	JTextField tfSlang, tfDefinition;
-	JButton jbtnSlangSearch, jbtnDefinitionSearch;
+	JButton jbtnSlangSearch, jbtnDefinitionSearch, jbtnAdd, jbtnUpdate, jbtnDelete;
 	JTable jtbSlangwords;
 	String[] colMedHdr = { "Slang word", "Definition" };
 
@@ -42,7 +42,6 @@ public class Main extends JPanel implements ActionListener {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
 
 		GridLayout panelGridLayout = new GridLayout(1, 3);
 		panelGridBagLayout = new JPanel();
@@ -123,6 +122,25 @@ public class Main extends JPanel implements ActionListener {
 
 		JPanel pn8 = new JPanel();
 		pn8.setPreferredSize(new Dimension(30, jtbSlangwords.getHeight()));
+
+		// Panel button (add, update, delete)
+		jbtnAdd = new JButton("Add");
+		jbtnAdd.addActionListener(this);
+		jbtnUpdate = new JButton("Update");
+		jbtnUpdate.addActionListener(this);
+		jbtnDelete = new JButton("Delete");
+		jbtnDelete.addActionListener(this);
+
+		JPanel pnControlData = new JPanel(new FlowLayout());
+		pnControlData.add(jbtnAdd);
+		pnControlData.add(jbtnUpdate);
+		pnControlData.add(jbtnDelete);
+
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 6;
+		gridBagConstraints.insets = new Insets(10, 70, 5, 10);
+		gridBagConstraints.gridwidth = 2;
+		panelGridBagLayout.add(pnControlData, gridBagConstraints);
 
 		// Add Main panel
 		add(panelGridBagLayout, BorderLayout.PAGE_START);
