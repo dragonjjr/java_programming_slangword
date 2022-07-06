@@ -26,19 +26,20 @@ public class Main extends JPanel implements ActionListener {
 
 	JPanel panelGridBagLayout, pn1, pn2, pn3, pn4, pn5;
 	JLabel lb1, lb2, lb3, lb4, lb5, lb6;
-	JTextField tfSlang, tfDefinition;
-	JButton jbtnSlangSearch, jbtnDefinitionSearch, jbtnAdd, jbtnUpdate, jbtnDelete;
+	JTextField tfId, tfSlang, tfDefinition;
+	JButton jbtnSlangSearch, jbtnDefinitionSearch, jbtnAdd, jbtnUpdate, jbtnDelete, jbtnResetData;
 	JTable jtbSlangwords;
 	String[] colMedHdr = { "Slang word", "Definition" };
 
+	Integer indexSlangWordSelected = -1;
 	ArrayList<SlangWord> lstSlangWord;
 
 	public Main() {
 		super(new BorderLayout());
 
-		lstSlangWord = new ArrayList<SlangWord>();
+		this.lstSlangWord = new ArrayList<SlangWord>();
 		try {
-			importDataFromFile(lstSlangWord);
+			importDataFromFile();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -68,19 +69,38 @@ public class Main extends JPanel implements ActionListener {
 		panelGridBagLayout.add(lb1, gridBagConstraints);
 		gridBagConstraints.gridwidth = 1;
 
+		// Panel Id field
+//		lb4 = new JLabel("ID:");
+//		lb4.setFont(new Font("Arial", Font.PLAIN, 16));
+//		tfId = new JTextField();
+//		tfId.setPreferredSize(new Dimension(180, 24));
+//		
+//		pn3.setLayout(new GridLayout(1,2));
+//		pn3.add(lb4);
+//		pn3.add(tfId);
+//		
+//		gridBagConstraints.gridx = 0;
+//		gridBagConstraints.gridy = 1;
+//		gridBagConstraints.insets = new Insets(5, 10, 5, 10);
+//		panelGridBagLayout.add(pn3, gridBagConstraints);
+
 		// Panel Slang text field
 		lb2 = new JLabel("Slang word:");
 		lb2.setFont(new Font("Arial", Font.PLAIN, 16));
-		tfSlang = new JFormattedTextField(new DecimalFormat("#"));
+		tfSlang = new JTextField();
 		tfSlang.setPreferredSize(new Dimension(180, 24));
+
 		jbtnSlangSearch = new JButton("Slang word search");
+		jbtnSlangSearch.addActionListener(this);
+		jbtnSlangSearch.setActionCommand("btnSlangwordSearch");
+
 		pn1.setLayout(panelGridLayout);
 		pn1.add(lb2);
 		pn1.add(tfSlang);
 		pn1.add(jbtnSlangSearch);
 
 		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridy = 2;
 		gridBagConstraints.insets = new Insets(5, 10, 5, 10);
 
 		panelGridBagLayout.add(pn1, gridBagConstraints);
@@ -90,14 +110,18 @@ public class Main extends JPanel implements ActionListener {
 		lb3.setFont(new Font("Arial", Font.PLAIN, 16));
 		tfDefinition = new JTextField();
 		tfDefinition.setPreferredSize(new Dimension(180, 24));
+
 		jbtnDefinitionSearch = new JButton("Definition search");
+		jbtnDefinitionSearch.addActionListener(this);
+		jbtnDefinitionSearch.setActionCommand("btnDefinitionSearch");
+
 		pn2.setLayout(panelGridLayout);
 		pn2.add(lb3);
 		pn2.add(tfDefinition);
 		pn2.add(jbtnDefinitionSearch);
 
 		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 2;
+		gridBagConstraints.gridy = 3;
 		gridBagConstraints.insets = new Insets(5, 10, 5, 10);
 		panelGridBagLayout.add(pn2, gridBagConstraints);
 
@@ -107,14 +131,17 @@ public class Main extends JPanel implements ActionListener {
 		jtbSlangwords.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
+				indexSlangWordSelected = jtbSlangwords.getSelectedRow();
+				
 				SlangWord slangWord = new SlangWord();
-				slangWord.setSlang(jtbSlangwords.getValueAt(jtbSlangwords.getSelectedRow(), 0).toString());
-				slangWord.setDefinition(jtbSlangwords.getValueAt(jtbSlangwords.getSelectedRow(), 1).toString());
+				slangWord.setSlang(jtbSlangwords.getValueAt(indexSlangWordSelected, 0).toString());
+				slangWord.setDefinition(jtbSlangwords.getValueAt(indexSlangWordSelected, 1).toString());
+				
 				setForm(slangWord);
 			}
 		});
 		jtbSlangwords.setDefaultEditor(Object.class, null);
-		fillTable();
+		fillTable(this.lstSlangWord);
 
 		// Box
 		JPanel pn7 = new JPanel();
@@ -122,23 +149,33 @@ public class Main extends JPanel implements ActionListener {
 
 		JPanel pn8 = new JPanel();
 		pn8.setPreferredSize(new Dimension(30, jtbSlangwords.getHeight()));
+		
+		JPanel pn9 = new JPanel();
+		pn9.setPreferredSize(new Dimension(jtbSlangwords.getWidth(), 30));
 
 		// Panel button (add, update, delete)
 		jbtnAdd = new JButton("Add");
 		jbtnAdd.addActionListener(this);
+		jbtnAdd.setActionCommand("btnAdd");
 		jbtnUpdate = new JButton("Update");
 		jbtnUpdate.addActionListener(this);
+		jbtnUpdate.setActionCommand("btnUpdate");
 		jbtnDelete = new JButton("Delete");
 		jbtnDelete.addActionListener(this);
+		jbtnDelete.setActionCommand("btnDelete");
+		jbtnResetData = new JButton("Reset data");
+		jbtnResetData.addActionListener(this);
+		jbtnResetData.setActionCommand("btnResetData");
 
 		JPanel pnControlData = new JPanel(new FlowLayout());
 		pnControlData.add(jbtnAdd);
 		pnControlData.add(jbtnUpdate);
 		pnControlData.add(jbtnDelete);
+		pnControlData.add(jbtnResetData);
 
 		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 6;
-		gridBagConstraints.insets = new Insets(10, 70, 5, 10);
+		gridBagConstraints.gridy = 4;
+		gridBagConstraints.insets = new Insets(10, 70, 10, 10);
 		gridBagConstraints.gridwidth = 2;
 		panelGridBagLayout.add(pnControlData, gridBagConstraints);
 
@@ -146,17 +183,20 @@ public class Main extends JPanel implements ActionListener {
 		add(panelGridBagLayout, BorderLayout.PAGE_START);
 		add(pn7, BorderLayout.WEST);
 		add(pn8, BorderLayout.EAST);
+		add(pn9, BorderLayout.SOUTH);
 		add(new JScrollPane(jtbSlangwords), BorderLayout.CENTER);
 
 	}
 
-	private void importDataFromFile(ArrayList<SlangWord> lstSlangWord) throws FileNotFoundException, IOException {
-		try (BufferedReader br = new BufferedReader(new FileReader("slang.txt"))) {
+	private void importDataFromFile() throws FileNotFoundException, IOException {
+		
+		try (BufferedReader br = new BufferedReader(new FileReader("slang.txt"))){
+			
 			String row;
 
 			// read header.
 			row = br.readLine();
-
+			Integer count = 1;
 			// read content file.
 			while (true) {
 				row = br.readLine();
@@ -168,20 +208,26 @@ public class Main extends JPanel implements ActionListener {
 
 				SlangWord slangWord = new SlangWord();
 
+				slangWord.setId(count.toString());
 				slangWord.setSlang(data[0]);
 				slangWord.setDefinition(data[1]);
 
-				lstSlangWord.add(slangWord);
+				this.lstSlangWord.add(slangWord);
+
+				count++;
 
 			}
+			
 			br.close();
 
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
+			
 		}
 	}
 
 	private void resetForm() {
+		this.indexSlangWordSelected = -1;
 		tfSlang.setText("");
 		tfDefinition.setText("");
 	}
@@ -191,16 +237,17 @@ public class Main extends JPanel implements ActionListener {
 		tfDefinition.setText(String.valueOf(slangWord.getDefinition()));
 	}
 
-	private void fillTable() {
+	private void fillTable(ArrayList<SlangWord> lstSlangWords) {
 		DefaultTableModel model = (DefaultTableModel) jtbSlangwords.getModel();
 		model.setRowCount(0);
-		for (SlangWord slangWord : lstSlangWord) {
-			Object[] rowdata = new Object[6];
+		for (SlangWord slangWord : lstSlangWords) {
+			Object[] rowdata = new Object[2];
 			rowdata[0] = slangWord.getSlang();
 			rowdata[1] = slangWord.getDefinition();
 
 			model.addRow(rowdata);
 		}
+
 	}
 
 	public static void main(String args[]) {
@@ -232,9 +279,127 @@ public class Main extends JPanel implements ActionListener {
 		frame.setVisible(true);
 	}
 
+	private void searchBySlangword(String slangWordText) {
+		if (!slangWordText.isEmpty()) {
+			ArrayList<SlangWord> lstSlangSearch = new ArrayList<SlangWord>();
+
+			for (SlangWord slangWord : this.lstSlangWord) {
+				if (slangWordText.equals(slangWord.getSlang())) {
+					lstSlangSearch.add(slangWord);
+				}
+			}
+
+			this.lstSlangWord = lstSlangSearch;
+			
+			this.indexSlangWordSelected = -1;
+			fillTable(lstSlangSearch);
+		}
+	}
+
+	private void searchByDefinition(String definitionText) {
+		if (!definitionText.isEmpty()) {
+			ArrayList<SlangWord> lstSlangSearch = new ArrayList<SlangWord>();
+
+			for (SlangWord slangWord : this.lstSlangWord) {
+				if (slangWord.getDefinition().contains(definitionText)) {
+					lstSlangSearch.add(slangWord);
+				}
+			}
+
+			this.lstSlangWord = lstSlangSearch;
+			
+			this.indexSlangWordSelected = -1;
+			fillTable(lstSlangSearch);
+		}
+	}
+
+	private void resetData() throws FileNotFoundException, IOException {
+		resetForm();
+		this.lstSlangWord = new ArrayList<SlangWord>();
+		importDataFromFile();
+		fillTable(lstSlangWord);
+	}
+
+	private void addSlangword(SlangWord slangWord) {
+		try {
+			if (String.valueOf(slangWord.getSlang()).isEmpty()) {
+				JOptionPane.showMessageDialog(this, "Please input slang word !!!");
+				return;
+			} else if (String.valueOf(slangWord.getDefinition()).isEmpty()) {
+				JOptionPane.showMessageDialog(this, "Please input definition !!!");
+				return;
+			} else {
+				this.lstSlangWord.add(slangWord);
+				JOptionPane.showMessageDialog(this, "Add success.");
+				fillTable(this.lstSlangWord);
+			}
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(this, "Something wrong !!!");
+			return;
+		}
+	}
+
+	private void updateSlangword(SlangWord slangWord, String slangWordText, String DefinitionText) {
+
+		try {
+			resetData();
+
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(this, "Something wrong !!!");
+			return;
+		}
+		
+	}
+
+	private void deleteSlangWord(int indexItem) {
+		try {
+			if (indexItem == -1) {
+				JOptionPane.showMessageDialog(this, "Not slang word is selected !!!");
+				return;
+			} else {
+				int res = JOptionPane.showOptionDialog(new JFrame(), "Do you want to delete this slang word?", "Delete",
+						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[] { "Yes", "No" },
+						JOptionPane.YES_OPTION);
+				if (res == JOptionPane.YES_OPTION) {
+					this.lstSlangWord.remove(indexItem);
+					JOptionPane.showMessageDialog(this, "Delete success.");
+					fillTable(this.lstSlangWord);
+				} 	
+			}
+
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(this, "Something wrong !!!");
+			ex.printStackTrace();
+			return;
+		}
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
+		String str = e.getActionCommand();
+		if (str.equals("btnSlangwordSearch")) {
+			searchBySlangword(tfSlang.getText().trim());
+		} else if (str.equals("btnDefinitionSearch")) {
+			searchByDefinition(tfDefinition.getText().trim());
+		} else if (str.equals("btnResetData")) {
+			try {
+				resetData();
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		} else if (str.equals("btnAdd")) {
+			SlangWord slangWord = new SlangWord(tfSlang.getText().trim(), tfDefinition.getText().trim());
+			addSlangword(slangWord);
+		} else if (str.equals("btnUpdate")) {
+			updateSlangword(null, tfSlang.getText().trim(), tfDefinition.getText().trim());
+		} else if (str.equals("btnDelete")) {
+			deleteSlangWord(this.indexSlangWordSelected);
+		}
 
 	}
 }

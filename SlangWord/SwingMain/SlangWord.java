@@ -1,6 +1,7 @@
 
 public class SlangWord {
 
+	private String id;
 	private String slang;
 	private String definition;
 	
@@ -17,6 +18,13 @@ public class SlangWord {
 		this.definition = definition;
 	}
 
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	
 	public SlangWord() {
 		super();
 		// TODO Auto-generated constructor stub
