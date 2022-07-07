@@ -6,6 +6,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
+import java.awt.desktop.AboutHandler;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -31,7 +32,7 @@ public class Main extends JPanel implements ActionListener {
 	JTable jtbSlangwords;
 	String[] colMedHdr = { "Slang word", "Definition" };
 
-	Integer indexSlangWordSelected = -1;
+	SlangWord slangWordSelected = null;
 	ArrayList<SlangWord> lstSlangWord;
 
 	public Main() {
@@ -131,12 +132,13 @@ public class Main extends JPanel implements ActionListener {
 		jtbSlangwords.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				indexSlangWordSelected = jtbSlangwords.getSelectedRow();
-				
+
 				SlangWord slangWord = new SlangWord();
-				slangWord.setSlang(jtbSlangwords.getValueAt(indexSlangWordSelected, 0).toString());
-				slangWord.setDefinition(jtbSlangwords.getValueAt(indexSlangWordSelected, 1).toString());
-				
+				slangWord.setSlang(jtbSlangwords.getValueAt(jtbSlangwords.getSelectedRow(), 0).toString());
+				slangWord.setDefinition(jtbSlangwords.getValueAt(jtbSlangwords.getSelectedRow(), 1).toString());
+
+				slangWordSelected = slangWord;
+
 				setForm(slangWord);
 			}
 		});
@@ -149,7 +151,7 @@ public class Main extends JPanel implements ActionListener {
 
 		JPanel pn8 = new JPanel();
 		pn8.setPreferredSize(new Dimension(30, jtbSlangwords.getHeight()));
-		
+
 		JPanel pn9 = new JPanel();
 		pn9.setPreferredSize(new Dimension(jtbSlangwords.getWidth(), 30));
 
@@ -189,14 +191,14 @@ public class Main extends JPanel implements ActionListener {
 	}
 
 	private void importDataFromFile() throws FileNotFoundException, IOException {
-		
-		try (BufferedReader br = new BufferedReader(new FileReader("slang.txt"))){
-			
+
+		try (BufferedReader br = new BufferedReader(new FileReader("slang.txt"))) {
+
 			String row;
 
 			// read header.
 			row = br.readLine();
-			Integer count = 1;
+
 			// read content file.
 			while (true) {
 				row = br.readLine();
@@ -208,26 +210,23 @@ public class Main extends JPanel implements ActionListener {
 
 				SlangWord slangWord = new SlangWord();
 
-				slangWord.setId(count.toString());
 				slangWord.setSlang(data[0]);
 				slangWord.setDefinition(data[1]);
 
 				this.lstSlangWord.add(slangWord);
 
-				count++;
-
 			}
-			
+
 			br.close();
 
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
-			
+
 		}
 	}
 
 	private void resetForm() {
-		this.indexSlangWordSelected = -1;
+		this.slangWordSelected = null;
 		tfSlang.setText("");
 		tfDefinition.setText("");
 	}
@@ -289,10 +288,11 @@ public class Main extends JPanel implements ActionListener {
 				}
 			}
 
-			this.lstSlangWord = lstSlangSearch;
-			
-			this.indexSlangWordSelected = -1;
+			this.slangWordSelected = null;
 			fillTable(lstSlangSearch);
+		}
+		else {
+			fillTable(this.lstSlangWord);
 		}
 	}
 
@@ -306,16 +306,18 @@ public class Main extends JPanel implements ActionListener {
 				}
 			}
 
-			this.lstSlangWord = lstSlangSearch;
-			
-			this.indexSlangWordSelected = -1;
+			this.slangWordSelected = null;
 			fillTable(lstSlangSearch);
+		}
+		else {
+			fillTable(this.lstSlangWord);
 		}
 	}
 
 	private void resetData() throws FileNotFoundException, IOException {
 		resetForm();
 		this.lstSlangWord = new ArrayList<SlangWord>();
+		this.slangWordSelected = null;
 		importDataFromFile();
 		fillTable(lstSlangWord);
 	}
@@ -329,9 +331,15 @@ public class Main extends JPanel implements ActionListener {
 				JOptionPane.showMessageDialog(this, "Please input definition !!!");
 				return;
 			} else {
+				if(findSlangword(slangWord)!=-1)
+				{
+					JOptionPane.showMessageDialog(this, "Slangword and definition are exists !");
+					return;
+				}
 				this.lstSlangWord.add(slangWord);
-				JOptionPane.showMessageDialog(this, "Add success.");
+				JOptionPane.showMessageDialog(this, "Add success !");
 				fillTable(this.lstSlangWord);
+				resetForm();
 			}
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(this, "Something wrong !!!");
@@ -339,21 +347,32 @@ public class Main extends JPanel implements ActionListener {
 		}
 	}
 
-	private void updateSlangword(SlangWord slangWord, String slangWordText, String DefinitionText) {
+	private void updateSlangword(SlangWord slangWord,String slangWordText, String definition) {
 
 		try {
-			resetData();
+			if (slangWord == null) {
+				JOptionPane.showMessageDialog(this, "Not slang word is selected !!!");
+				return;
+			} else {
+				SlangWord slangWordEdit = this.lstSlangWord.get(findSlangword(slangWord));
+				slangWordEdit.setSlang(slangWordText);
+				slangWordEdit.setDefinition(definition);
+				
+				JOptionPane.showMessageDialog(this, "Update success !");
+				fillTable(this.lstSlangWord);
+				resetForm();
+			}
 
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(this, "Something wrong !!!");
 			return;
 		}
-		
+
 	}
 
-	private void deleteSlangWord(int indexItem) {
+	private void deleteSlangWord(SlangWord slangWord) {
 		try {
-			if (indexItem == -1) {
+			if (slangWord == null) {
 				JOptionPane.showMessageDialog(this, "Not slang word is selected !!!");
 				return;
 			} else {
@@ -361,10 +380,11 @@ public class Main extends JPanel implements ActionListener {
 						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[] { "Yes", "No" },
 						JOptionPane.YES_OPTION);
 				if (res == JOptionPane.YES_OPTION) {
-					this.lstSlangWord.remove(indexItem);
-					JOptionPane.showMessageDialog(this, "Delete success.");
+					this.lstSlangWord.remove(findSlangword(slangWord));
+					JOptionPane.showMessageDialog(this, "Delete success !");
 					fillTable(this.lstSlangWord);
-				} 	
+					resetForm();
+				}
 			}
 
 		} catch (Exception ex) {
@@ -373,7 +393,19 @@ public class Main extends JPanel implements ActionListener {
 			return;
 		}
 	}
-	
+
+	private int findSlangword(SlangWord slangWord) {
+		for (int i = 0; i < this.lstSlangWord.size(); i++) {
+			SlangWord itemSlangWord = this.lstSlangWord.get(i);
+			if (itemSlangWord.getSlang().equals(slangWord.getSlang())
+					& itemSlangWord.getDefinition().equals(slangWord.getDefinition())) {
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
@@ -396,9 +428,9 @@ public class Main extends JPanel implements ActionListener {
 			SlangWord slangWord = new SlangWord(tfSlang.getText().trim(), tfDefinition.getText().trim());
 			addSlangword(slangWord);
 		} else if (str.equals("btnUpdate")) {
-			updateSlangword(null, tfSlang.getText().trim(), tfDefinition.getText().trim());
+			updateSlangword(this.slangWordSelected,tfSlang.getText().trim(), tfDefinition.getText().trim());
 		} else if (str.equals("btnDelete")) {
-			deleteSlangWord(this.indexSlangWordSelected);
+			deleteSlangWord(this.slangWordSelected);
 		}
 
 	}
