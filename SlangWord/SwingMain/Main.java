@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.jar.JarEntry;
 
 public class Main extends JPanel implements ActionListener {
@@ -28,7 +29,7 @@ public class Main extends JPanel implements ActionListener {
 	JPanel panelGridBagLayout, pn1, pn2, pn3, pn4, pn5;
 	JLabel lb1, lb2, lb3, lb4, lb5, lb6;
 	JTextField tfId, tfSlang, tfDefinition;
-	JButton jbtnSlangSearch, jbtnDefinitionSearch, jbtnAdd, jbtnUpdate, jbtnDelete, jbtnResetData;
+	JButton jbtnSlangSearch, jbtnDefinitionSearch, jbtnAdd, jbtnUpdate, jbtnDelete, jbtnResetData, jbtnRandomSlang;
 	JTable jtbSlangwords;
 	String[] colMedHdr = { "Slang word", "Definition" };
 
@@ -168,12 +169,16 @@ public class Main extends JPanel implements ActionListener {
 		jbtnResetData = new JButton("Reset data");
 		jbtnResetData.addActionListener(this);
 		jbtnResetData.setActionCommand("btnResetData");
+		jbtnRandomSlang = new JButton("Random slang word");
+		jbtnRandomSlang.addActionListener(this);
+		jbtnRandomSlang.setActionCommand("btnRandomSlang");
 
 		JPanel pnControlData = new JPanel(new FlowLayout());
 		pnControlData.add(jbtnAdd);
 		pnControlData.add(jbtnUpdate);
 		pnControlData.add(jbtnDelete);
 		pnControlData.add(jbtnResetData);
+		pnControlData.add(jbtnRandomSlang);
 
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 4;
@@ -290,8 +295,7 @@ public class Main extends JPanel implements ActionListener {
 
 			this.slangWordSelected = null;
 			fillTable(lstSlangSearch);
-		}
-		else {
+		} else {
 			fillTable(this.lstSlangWord);
 		}
 	}
@@ -308,8 +312,7 @@ public class Main extends JPanel implements ActionListener {
 
 			this.slangWordSelected = null;
 			fillTable(lstSlangSearch);
-		}
-		else {
+		} else {
 			fillTable(this.lstSlangWord);
 		}
 	}
@@ -331,8 +334,7 @@ public class Main extends JPanel implements ActionListener {
 				JOptionPane.showMessageDialog(this, "Please input definition !!!");
 				return;
 			} else {
-				if(findSlangword(slangWord)!=-1)
-				{
+				if (findSlangword(slangWord) != -1) {
 					JOptionPane.showMessageDialog(this, "Slangword and definition are exists !");
 					return;
 				}
@@ -347,7 +349,7 @@ public class Main extends JPanel implements ActionListener {
 		}
 	}
 
-	private void updateSlangword(SlangWord slangWord,String slangWordText, String definition) {
+	private void updateSlangword(SlangWord slangWord, String slangWordText, String definition) {
 
 		try {
 			if (slangWord == null) {
@@ -357,7 +359,7 @@ public class Main extends JPanel implements ActionListener {
 				SlangWord slangWordEdit = this.lstSlangWord.get(findSlangword(slangWord));
 				slangWordEdit.setSlang(slangWordText);
 				slangWordEdit.setDefinition(definition);
-				
+
 				JOptionPane.showMessageDialog(this, "Update success !");
 				fillTable(this.lstSlangWord);
 				resetForm();
@@ -406,6 +408,19 @@ public class Main extends JPanel implements ActionListener {
 		return -1;
 	}
 
+	private void randomSlangword() {
+		Random rand = new Random();
+
+		int indexRandom = rand.nextInt(this.lstSlangWord.size());
+
+		SlangWord slangwordRandom = this.lstSlangWord.get(indexRandom);
+
+		JOptionPane.showMessageDialog(this, slangwordRandom.getSlang() + ": " + slangwordRandom.getDefinition(),"On this day slang word",JOptionPane.INFORMATION_MESSAGE);
+
+		setForm(slangwordRandom);
+
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
@@ -428,9 +443,11 @@ public class Main extends JPanel implements ActionListener {
 			SlangWord slangWord = new SlangWord(tfSlang.getText().trim(), tfDefinition.getText().trim());
 			addSlangword(slangWord);
 		} else if (str.equals("btnUpdate")) {
-			updateSlangword(this.slangWordSelected,tfSlang.getText().trim(), tfDefinition.getText().trim());
+			updateSlangword(this.slangWordSelected, tfSlang.getText().trim(), tfDefinition.getText().trim());
 		} else if (str.equals("btnDelete")) {
 			deleteSlangWord(this.slangWordSelected);
+		} else if (str.equals("btnRandomSlang")) {
+			randomSlangword();
 		}
 
 	}
