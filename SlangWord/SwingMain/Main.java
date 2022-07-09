@@ -31,8 +31,9 @@ public class Main extends JPanel implements ActionListener {
 	JTextField tfId, tfSlang, tfDefinition;
 	JButton jbtnSlangSearch, jbtnDefinitionSearch, jbtnAdd, jbtnUpdate, jbtnDelete, jbtnResetData, jbtnRandomSlang;
 	JTable jtbSlangwords;
+	JComboBox<String> jcbHistorySlang;
 	String[] colMedHdr = { "Slang word", "Definition" };
-
+	DefaultComboBoxModel<String> lstHistorySlang = new DefaultComboBoxModel<String>(new String[] {});
 	SlangWord slangWordSelected = null;
 	ArrayList<SlangWord> lstSlangWord;
 
@@ -46,7 +47,7 @@ public class Main extends JPanel implements ActionListener {
 			e.printStackTrace();
 		}
 
-		GridLayout panelGridLayout = new GridLayout(1, 3);
+		GridLayout panelGridLayout = new GridLayout(1, 4);
 		panelGridBagLayout = new JPanel();
 		pn1 = new JPanel();
 		pn2 = new JPanel();
@@ -96,10 +97,33 @@ public class Main extends JPanel implements ActionListener {
 		jbtnSlangSearch.addActionListener(this);
 		jbtnSlangSearch.setActionCommand("btnSlangwordSearch");
 
+		jcbHistorySlang = new JComboBox<String>(lstHistorySlang);
+		jcbHistorySlang.setSelectedIndex(-1);
+		//jcbHistorySlang.setBounds(5, 5, 5, 5);
+		jcbHistorySlang.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				//
+				// Get the source of the component, which is our combo
+				// box.
+				//
+				@SuppressWarnings("unchecked")
+				JComboBox<String> comboBox = (JComboBox<String>) event.getSource();
+
+				Object selected = comboBox.getSelectedItem();
+				if(selected!=null)
+				{
+					tfSlang.setText(selected.toString());
+				}
+			
+				// fillTable();
+			}
+		});
+
 		pn1.setLayout(panelGridLayout);
 		pn1.add(lb2);
 		pn1.add(tfSlang);
 		pn1.add(jbtnSlangSearch);
+		pn1.add(jcbHistorySlang);
 
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 2;
@@ -295,6 +319,18 @@ public class Main extends JPanel implements ActionListener {
 
 			this.slangWordSelected = null;
 			fillTable(lstSlangSearch);
+			
+			// set history slang search
+			if(lstSlangSearch.size()>0)
+			{
+				if(lstHistorySlang.getIndexOf(slangWordText)==-1)
+				{
+					lstHistorySlang.addElement(slangWordText);
+					//jcbHistorySlang.addItem(slangWordText);
+				}
+			}
+			
+			
 		} else {
 			fillTable(this.lstSlangWord);
 		}
@@ -321,6 +357,9 @@ public class Main extends JPanel implements ActionListener {
 		resetForm();
 		this.lstSlangWord = new ArrayList<SlangWord>();
 		this.slangWordSelected = null;
+		this.lstHistorySlang.removeAllElements();
+		jcbHistorySlang.removeAllItems();
+		//jcbHistorySlang.setSelectedIndex(0);
 		importDataFromFile();
 		fillTable(lstSlangWord);
 	}
@@ -378,15 +417,23 @@ public class Main extends JPanel implements ActionListener {
 				JOptionPane.showMessageDialog(this, "Not slang word is selected !!!");
 				return;
 			} else {
-				int res = JOptionPane.showOptionDialog(new JFrame(), "Do you want to delete this slang word?", "Delete",
-						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[] { "Yes", "No" },
-						JOptionPane.YES_OPTION);
-				if (res == JOptionPane.YES_OPTION) {
-					this.lstSlangWord.remove(findSlangword(slangWord));
-					JOptionPane.showMessageDialog(this, "Delete success !");
-					fillTable(this.lstSlangWord);
-					resetForm();
+				if(findSlangword(slangWord)==-1)
+				{
+					JOptionPane.showMessageDialog(this, "Slang word does not exists !!!");
+					return;
 				}
+				else {
+					int res = JOptionPane.showOptionDialog(new JFrame(), "Do you want to delete this slang word?", "Delete",
+							JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[] { "Yes", "No" },
+							JOptionPane.YES_OPTION);
+					if (res == JOptionPane.YES_OPTION) {
+						this.lstSlangWord.remove(findSlangword(slangWord));
+						JOptionPane.showMessageDialog(this, "Delete success !");
+						fillTable(this.lstSlangWord);
+						resetForm();
+					}
+				}
+			
 			}
 
 		} catch (Exception ex) {
@@ -415,7 +462,8 @@ public class Main extends JPanel implements ActionListener {
 
 		SlangWord slangwordRandom = this.lstSlangWord.get(indexRandom);
 
-		JOptionPane.showMessageDialog(this, slangwordRandom.getSlang() + ": " + slangwordRandom.getDefinition(),"On this day slang word",JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(this, slangwordRandom.getSlang() + ": " + slangwordRandom.getDefinition(),
+				"On this day slang word", JOptionPane.INFORMATION_MESSAGE);
 
 		setForm(slangwordRandom);
 
